@@ -22,136 +22,98 @@ $article_enable_background = get_theme_mod( 'article_enable_background' );
   endif;
 ?>" id="blog">
 <div class="container">
+  <?php  
+  if (!empty($article_title) || !empty($article_subtitle)) :
+  ?>
   <div class="row mb-5">
     <div class="col-12 text-center">
-      <h2 class="section-heading mb-3 to-animate">Article</h2>
-      <p class="section-subheading to-animate">Its hard to stay ahead of the game. I take every tasks seriously. Things I do flawlessly.</p>
+      <?php  
+      if (!empty($article_title)) :
+      ?>
+        <h2 class="section-heading mb-3 to-animate"><?php echo $article_title; ?></h2>
+      <?php
+      endif;
+      ?>
+
+      <?php  
+      if (!empty($article_subtitle)) :
+      ?>
+        <p class="section-subheading to-animate"><?php echo $article_subtitle; ?></p>
+      <?php
+      endif;
+      ?>      
     </div>
   </div>
+  <?php
+  endif;
+  ?>
+
+  
+  
   
   <div class="row">
-    <div class="col-md-4">
-      <article class="blog-post-wrapper p-1 mb-5 to-animate">
-        <div class="figure">
-          <div class="post-thumbnail">
-          <a href="#">
-          <img width="800" height="600" src="https://sketchthemes.com/samples/xperson-personal-portfolio-demo/wp-content/uploads/sites/98/2016/05/xperson-blog-1-800x600.jpg" class="img-fluid" alt=""> </a>
+    <?php
+      $args = array(
+        'post_type' => 'post',
+        'post_status' => 'publish',
+        'posts_per_page'         => '6',
+        'ignore_sticky_posts'    => true,
+      );
+       
+      $articles_query = new WP_Query( $args );
+      if ( have_posts() ) :
+
+        /* Start the Loop */
+        while ( $articles_query->have_posts() ) : $articles_query->the_post();
+        ?>
+        <article class="mb-4 post col-12 col-sm-6 col-md-4"> 
+          <div class="white z-depth-1 d-flex flex-column h-100" style="min-height: 14rem;"> 
+            <?php
+            if(has_post_thumbnail()){ ?>
+            <div class="full-bg-image post-img mb-1 d-block clearfix" style="background-image: url('<?php echo get_the_post_thumbnail_url(''); ?>');">
+              <a href="<?php the_permalink(); ?>" class="postthumb h-100 w-100"></a>
+            </div>
+
+            <?php }
+            ?>
+             
+            <div class="p-3 pt-1"> 
+              <?php
+              if (get_avatar(get_the_author_meta('ID')) !== FALSE) {
+              ?>
+              <div class="text-right float-right" style="margin-top:-2.6rem;"> 
+                <img class="ml-2 rounded-circle white" style="padding:3px;width:3rem;height: 3rem;" alt="" src="<?php echo get_avatar_url( get_the_author_meta( 'ID' ) , 32 ); ?>"> 
+              </div>  
+              <?php }
+              ?>
+               
+              <h2 class="headline mb-0 small strong"> 
+                <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a> 
+              </h2> 
+            </div>  
+          </div> 
+        </article>
+
+        <?php
+        endwhile;
+
+        $count = $articles_query->found_posts;
+        if ($count > 6) { ?>
+          <div class="blog-more text-center mt-2 mx-auto">
+            <a href="<?php echo home_url('/blog'); ?>" class="btn btn-primary">View All Post</a>
           </div>
-          <i class="fa fa-file-photo-o"></i> 
-        </div>
+        <?php }
+
+        // Restore original post data.
+        wp_reset_postdata();
+        else :
+
+        get_template_part( 'template-parts/content', 'none' );
       
-        <header class="entry-header px-2">
-          <div class="post-meta mb-2">
-            <span class="the-category">
-              <a href="#" rel="category tag">Post Format</a>, <a href="#" rel="category tag">Uncategorized</a> 
-            </span>
-          </div>
-        
-          <h2 class="entry-title"><a href="#" rel="">Link:Post Format: Standard</a></h2>
-          <hr>
-          <div class="entry-meta">
-            <ul class="list-inline">
-              <li class="list-inline-item">
-                <span class="the-author"><i class="fas fa-user"></i> <a href="#" title="Posts by gunjan" rel="author">Nirvair</a></span>
-              </li>
-              <li class="list-inline-item">
-                <span class="the-time"> <i class="far fa-calendar-alt"></i>
-                  <a href="#" title="Archive for May 2016">May</a> 
-                  <a href="#" title="Archive for May 13, 2016">13</a>, 
-                  <a href="#" title="Archive for 2016">2016</a> 
-                </span>
-              </li>
-              <li class="list-inline-item">
-                <span class="the-comments"> <i class="far fa-comments"></i> 0 </span>
-              </li>
-            </ul>
-          </div>
-        </header>
-      </article>
-    </div>
-    <div class="col-md-4">
-      <article class="blog-post-wrapper p-1 mb-5 to-animate">
-        <div class="figure">
-          <div class="post-thumbnail">
-          <a href="#">
-          <img width="800" height="600" src="https://sketchthemes.com/samples/xperson-personal-portfolio-demo/wp-content/uploads/sites/98/2016/05/xperson-blog-1-800x600.jpg" class="img-fluid" alt=""> </a>
-          </div>
-          <i class="fa fa-file-photo-o"></i> 
-        </div>
-      
-        <header class="entry-header px-2">
-          <div class="post-meta mb-2">
-            <span class="the-category">
-              <a href="#" rel="category tag">Post Format</a>, <a href="#" rel="category tag">Uncategorized</a> 
-            </span>
-          </div>
-        
-          <h2 class="entry-title"><a href="#" rel="">Link:Post Format: Standard</a></h2>
-          <hr>
-          <div class="entry-meta">
-            <ul class="list-inline">
-              <li class="list-inline-item">
-                <span class="the-author"><i class="fas fa-user"></i> <a href="#" title="Posts by gunjan" rel="author">Nirvair</a></span>
-              </li>
-              <li class="list-inline-item">
-                <span class="the-time"> <i class="far fa-calendar-alt"></i>
-                  <a href="#" title="Archive for May 2016">May</a> 
-                  <a href="#" title="Archive for May 13, 2016">13</a>, 
-                  <a href="#" title="Archive for 2016">2016</a> 
-                </span>
-              </li>
-              <li class="list-inline-item">
-                <span class="the-comments"> <i class="far fa-comments"></i> 0 </span>
-              </li>
-            </ul>
-          </div>
-        </header>
-      </article>
-    </div>
-    <div class="col-md-4">
-      <article class="blog-post-wrapper p-1 mb-5 to-animate">
-        <div class="figure">
-          <div class="post-thumbnail">
-          <a href="#">
-          <img width="800" height="600" src="https://sketchthemes.com/samples/xperson-personal-portfolio-demo/wp-content/uploads/sites/98/2016/05/xperson-blog-1-800x600.jpg" class="img-fluid" alt=""> </a>
-          </div>
-        </div>
-      
-        <header class="entry-header px-2">
-          <div class="post-meta mb-2">
-            <span class="the-category">
-              <a href="#" rel="category tag">Post Format</a>, <a href="#" rel="category tag">Uncategorized</a> 
-            </span>
-          </div>
-        
-          <h2 class="entry-title"><a href="#" rel="">Link:Post Format: Standard</a></h2>
-          <hr>
-          <div class="entry-meta">
-            <ul class="list-inline">
-              <li class="list-inline-item">
-                <span class="the-author"><i class="fas fa-user"></i> <a href="#" title="Posts by gunjan" rel="author">Nirvair</a></span>
-              </li>
-              <li class="list-inline-item">
-                <span class="the-time"> <i class="far fa-calendar-alt"></i>
-                  <a href="#" title="Archive for May 2016">May</a> 
-                  <a href="#" title="Archive for May 13, 2016">13</a>, 
-                  <a href="#" title="Archive for 2016">2016</a> 
-                </span>
-              </li>
-              <li class="list-inline-item">
-                <span class="the-comments"> <i class="far fa-comments"></i> 0 </span>
-              </li>
-            </ul>
-          </div>
-        </header>
-      </article>
-    </div>
+      endif;
+      ?>
+    
   </div>
 
-  <div class="row">
-    <div class="blog-more text-center mt-2 mx-auto">
-      <a href="#" class="btn btn-primary">View More</a>
-    </div>
-  </div>
 </div>
 </section>

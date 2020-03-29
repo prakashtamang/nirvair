@@ -106,9 +106,9 @@ add_action( 'after_setup_theme', 'nirvair_portfolio_content_width', 0 );
 function nirvair_portfolio_widgets_init() {
 	register_sidebar( array(
 		'name'          => esc_html__( 'Sidebar', 'nirvair' ),
-		'id'            => 'sidebar-1',
+		'id'            => 'sidebar',
 		'description'   => esc_html__( 'Add widgets here.', 'nirvair' ),
-		'before_widget' => '<section id="%1$s" class="widget %2$s">',
+		'before_widget' => '<section id="%1$s" class="widget %2$s p-3 mb-5">',
 		'after_widget'  => '</section>',
 		'before_title'  => '<h2 class="widget-title">',
 		'after_title'   => '</h2>',
@@ -452,6 +452,125 @@ function nirvair_add_menuclass($ulclass) {
 }
 add_filter('wp_nav_menu','nirvair_add_menuclass');
 	
+/**
+ * Custom Numeric Pagination
+ */
+function nirvair_numeric_posts_nav() {
+ 
+    if( is_singular() )
+        return;
+ 
+    global $wp_query;
+ 
+    /** Stop execution if there's only 1 page */
+    if( $wp_query->max_num_pages <= 1 )
+        return;
+ 
+    $paged = get_query_var( 'paged' ) ? absint( get_query_var( 'paged' ) ) : 1;
+    $max   = intval( $wp_query->max_num_pages );
+ 
+    /** Add current page to the array */
+    if ( $paged >= 1 )
+        $links[] = $paged;
+ 
+    /** Add the pages around the current page to the array */
+    if ( $paged >= 3 ) {
+        $links[] = $paged - 1;
+        $links[] = $paged - 2;
+    }
+ 
+    if ( ( $paged + 2 ) <= $max ) {
+        $links[] = $paged + 2;
+        $links[] = $paged + 1;
+    }
+ 
+    echo '<div class="navigation" style="width:100%;"><ul class="text-center  my-5">' . "\n";
+ 
+    /** Previous Post Link */
+    if ( get_previous_posts_link() )
+        printf( '<li>%s</li>' . "\n", get_previous_posts_link() );
+ 
+    /** Link to first page, plus ellipses if necessary */
+    if ( ! in_array( 1, $links ) ) {
+        $class = 1 == $paged ? ' class="active"' : '';
+ 
+        printf( '<li%s><a href="%s">%s</a></li>' . "\n", $class, esc_url( get_pagenum_link( 1 ) ), '1' );
+ 
+        if ( ! in_array( 2, $links ) )
+            echo '<li>…</li>';
+    }
+ 
+    /** Link to current page, plus 2 pages in either direction if necessary */
+    sort( $links );
+    foreach ( (array) $links as $link ) {
+        $class = $paged == $link ? ' class="active"' : '';
+        printf( '<li%s><a href="%s">%s</a></li>' . "\n", $class, esc_url( get_pagenum_link( $link ) ), $link );
+    }
+ 
+    /** Link to last page, plus ellipses if necessary */
+    if ( ! in_array( $max, $links ) ) {
+        if ( ! in_array( $max - 1, $links ) )
+            echo '<li>…</li>' . "\n";
+ 
+        $class = $paged == $max ? ' class="active"' : '';
+        printf( '<li%s><a href="%s">%s</a></li>' . "\n", $class, esc_url( get_pagenum_link( $max ) ), $max );
+    }
+ 
+    /** Next Post Link */
+    if ( get_next_posts_link() )
+        printf( '<li>%s</li>' . "\n", get_next_posts_link() );
+ 
+    echo '</ul></div>' . "\n";
+ 
+}
+
+/**
+ * Filter the excerpt "read more" string.
+ *
+ * @param string $more "Read more" excerpt string.
+ * @return string (Maybe) modified "read more" excerpt string.
+ */
+function nirvair_excerpt_more( $more ) {
+    return '...';
+}
+add_filter( 'excerpt_more', 'nirvair_excerpt_more' );
+
+
+/**
+ * Search SQL filter for matching against post title only.
+ */
+
+function nirvair_search_by_title_only( $search, $wp_query ){
+	global $wpdb;
+
+	if ( empty( $search ) )
+	return $search; // skip processing - no search term in query
+
+	$q = $wp_query->query_vars;
+	$n = ! empty( $q['exact'] ) ? '' : '%';
+
+	$search =
+	$searchand = '';
+
+	foreach ( (array) $q['search_terms'] as $term ) {
+	$term = esc_sql( like_escape( $term ) );
+
+	$search .= "{$searchand}($wpdb->posts.post_title REGEXP '[[:<:]]{$term}[[:>:]]')";
+
+	$searchand = ' AND ';
+	}
+
+	if ( ! empty( $search ) ) {
+	$search = " AND ({$search}) ";
+	if ( ! is_user_logged_in() )
+	$search .= " AND ($wpdb->posts.post_password = '') ";
+	}
+
+	return $search;
+}
+
+add_filter( 'posts_search', 'nirvair_search_by_title_only', 1000, 2 );
+
 /**
  * Implement the Custom Header feature.
  */

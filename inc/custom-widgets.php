@@ -334,3 +334,113 @@ function register_nirvair_custom_contact_widget() {
     register_widget( 'Nirvair_Custom_Contact_Widget' );
 }
 add_action( 'widgets_init', 'register_nirvair_custom_contact_widget' );
+
+
+/**
+ * Adds Nirvair_Related_Post_Widget.
+ */
+class Nirvair_Related_Post_Widget extends WP_Widget {
+
+	/**
+	 * Register widget with WordPress.
+	 */
+	function __construct() {
+		parent::__construct(
+			'nirvair_related_post_widget', // Base ID
+			esc_html__( 'Nirvair: Related Posts', 'nirvair' ), // Name
+			array( 'description' => esc_html__( 'Nirvair Custom Related Post Widget', 'nirvair' ), ) // Args
+		);
+	}
+
+	/**
+	 * Front-end display of widget.
+	 *
+	 * @see WP_Widget::widget()
+	 *
+	 * @param array $args     Widget arguments.
+	 * @param array $instance Saved values from database.
+	 */
+	public function widget( $args, $instance ) {
+		echo $args['before_widget'];
+			if (!empty($instance['post_title'])) {
+	          	echo $args['before_title'] . $instance['post_title'] . $args['after_title'];
+	          }
+		 	$orig_post = $post;
+			global $post;
+			$categories = get_the_category($post->ID);
+			if ($categories) {
+				$category_ids = array();
+				foreach($categories as $individual_category) $category_ids[] = $individual_category->term_id;
+
+				$query_args=array(
+					'category__in' => $category_ids,
+					'post__not_in' => array($post->ID),
+					'posts_per_page'=> $instance['post_count'], // Number of related posts that will be shown.
+					'ignore_sticky_posts'=>1,
+					'orderby'   => 'rand',
+				);
+
+				$related_post_query = new wp_query( $query_args );
+				if( $related_post_query->have_posts() ) {
+					echo '<ul>';
+					while( $related_post_query->have_posts() ) {
+					$related_post_query->the_post();?>
+
+					<li><a href="<?php the_permalink()?>" rel="bookmark" title="<?php the_title(); ?>"><?php the_title(); ?></a></li>
+					<?php
+					}
+				echo '</ul>';
+				}
+			}
+			$post = $orig_post;
+			wp_reset_query();
+		echo $args['after_widget'];
+	}
+
+	/**
+	 * Back-end widget form.
+	 *
+	 * @see WP_Widget::form()
+	 *
+	 * @param array $instance Previously saved values from database.
+	 */
+	public function form( $instance ) {
+		$post_title = ! empty( $instance['post_title'] ) ? $instance['post_title'] : esc_html__( '', 'nirvair' );
+		$post_count = ! empty( $instance['post_count'] ) ? $instance['post_count'] : esc_html__( '5', 'nirvair' );
+		?>
+		<p>
+		<label for="<?php echo esc_attr( $this->get_field_id( 'post_title' ) ); ?>"><?php esc_attr_e( 'Title:', 'nirvair' ); ?></label> 
+		<input class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'post_title' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'post_title' ) ); ?>" type="text" value="<?php echo esc_attr( $post_title ); ?>">
+		</p>
+
+		<p>
+		<label for="<?php echo esc_attr( $this->get_field_id( 'post_count' ) ); ?>"><?php esc_attr_e( 'Number of Post to Show:', 'nirvair' ); ?></label> 
+		<input class="tiny-text" id="<?php echo esc_attr( $this->get_field_id( 'post_count' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'post_count' ) ); ?>" type="number" value="<?php echo esc_attr( $post_count ); ?>" min="1" max="20" size="4">
+		</p>
+		<?php 
+	}
+
+	/**
+	 * Sanitize widget form values as they are saved.
+	 *
+	 * @see WP_Widget::update()
+	 *
+	 * @param array $new_instance Values just sent to be saved.
+	 * @param array $old_instance Previously saved values from database.
+	 *
+	 * @return array Updated safe values to be saved.
+	 */
+	public function update( $new_instance, $old_instance ) {
+		$instance = array();
+		$instance['post_title'] = ( ! empty( $new_instance['post_title'] ) ) ? sanitize_text_field( $new_instance['post_title'] ) : '';
+		$instance['post_count'] = ( ! empty( $new_instance['post_count'] ) ) ? sanitize_text_field( $new_instance['post_count'] ) : '';
+		return $instance;
+	}
+
+} // class Nirvair_Related_Post_Widget
+
+// register Nirvair_Related_Post_Widget widget
+function register_nirvair_custom_related_post_widget() {
+    register_widget( 'Nirvair_Related_Post_Widget' );
+}
+add_action( 'widgets_init', 'register_nirvair_custom_related_post_widget' );

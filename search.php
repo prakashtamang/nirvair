@@ -9,21 +9,20 @@
 
 get_header();
 ?>
-
-	<section id="primary" class="content-area">
-		<main id="main" class="site-main">
-
+<section id="content" class="site-content">
+	<div class="container">
+		<main id="main">
 		<?php if ( have_posts() ) : ?>
+		<header class="archive-header">
+			<h1 class="headline">
+			<?php
+			/* translators: %s: search query. */
+			printf( esc_html__( 'Search Results for: %s', 'nirvair' ), '<span>' . get_search_query() . '</span>' );
+			?>
+			</h1>
+		</header>
 
-			<header class="page-header">
-				<h1 class="page-title">
-					<?php
-					/* translators: %s: search query. */
-					printf( esc_html__( 'Search Results for: %s', 'nirvair' ), '<span>' . get_search_query() . '</span>' );
-					?>
-				</h1>
-			</header><!-- .page-header -->
-
+		<article id="post-<?php the_ID(); ?>" <?php post_class('row'); ?>>
 			<?php
 			/* Start the Loop */
 			while ( have_posts() ) :
@@ -38,7 +37,8 @@ get_header();
 
 			endwhile;
 
-			the_posts_navigation();
+			// Numeric Pagination
+			nirvair_numeric_posts_nav();
 
 		else :
 
@@ -46,10 +46,10 @@ get_header();
 
 		endif;
 		?>
-
+		</article>
 		</main><!-- #main -->
-	</section><!-- #primary -->
+	</div> <!-- end of container -->
+</section><!-- #content -->
 
 <?php
-get_sidebar();
 get_footer();
